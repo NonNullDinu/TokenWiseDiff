@@ -1,0 +1,52 @@
+LANG_TOKENS:
+unsigned
+signed
+int
+long
+char
+double
+float
+bool
+(
+)
+[
+]
+{
+}
+;
++
+-
+*
+/
+%
+&
+|
+^
+>>
+<<
+=
++=
+-=
+*=
+/=
+>>=
+<<=
+|=
+&=
+^=
+.
+->
+,
+@std_identifier
+
+SAME:
+a+=b a=a+b
+a-=b a=a-b
+a*=b a=a*b
+a/=b a=a/b
+a%=b a=a%b
+a|=b a=a|b
+a&=b a=a&b
+((a)) (a)
+
+END
