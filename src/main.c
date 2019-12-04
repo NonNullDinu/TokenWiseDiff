@@ -28,9 +28,9 @@ int main(int argc, char **argv)
     fclose(f2);
     RESULT res = compare(&INTERNAL_1, &INTERNAL_2, &syntax);
     if (opts.fancy_output)
-        printf("Similarities in tokens: %ld\nTotal: %ld\n", res.matches, res.total);
+        printf("Similarities in tokens: %ld\nTotal: %ld\nPercentage: %Lf\n", res.matches, res.total, ((long double) res.matches) / ((long double) res.total));
     else
-        printf("%ld\n%ld\n", res.matches, res.total);
+        printf("%ld\n%ld\n%Lf", res.matches, res.total, ((long double) res.matches) / ((long double) res.total));
     deallocate_syntax(&syntax);
     return 0;
 }
@@ -63,7 +63,7 @@ OPTS process_args(int argc, char **argv)
             strcpy(opts.syntax_file, argv[i + 1]);
             i++;
         }
-        else if(strcmp(argv[i], "-f") == 0)
+        else if (strcmp(argv[i], "-f") == 0)
             opts.fancy_output = 1;
     }
     if (file_2_loc[0] == '\0')
@@ -77,6 +77,7 @@ OPTS process_args(int argc, char **argv)
 SYNTAX getSyntax(char *file)
 {
     SYNTAX s;
+    s.has_c_cpp_comments = s.has_std_strings = 0;
     FILE *f = fopen(file, "r");
     char input[131072];
     fread(input, 1, 131072, f);
@@ -89,6 +90,8 @@ SYNTAX getSyntax(char *file)
             section = 1;
         else if (strcmp(p, "SAME:") == 0)
             section = 2;
+        else if (strcmp(p, "CONFIG:") == 0)
+            section = 3;
         else if (strcmp(p, "END") == 0)
             break;
         else
@@ -102,17 +105,31 @@ SYNTAX getSyntax(char *file)
             {
                 s.tokens[s.number_of_tokens].type = s.number_of_tokens;
                 strcpy(s.tokens[s.number_of_tokens].blueprint, p);
-                if(p[0] == '@'){
-                    if(strcmp(p, "@std_identifier") == 0){
+                if (p[0] == '@')
+                {
+                    if (strcmp(p, "@std_identifier") == 0)
+                    {
                         int reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^[a-zA-Z_][a-zA-Z0-9_]*", 0);
-                        if(reti){
+                        if (reti)
+                        {
                             fprintf(stderr, "Could not compile regular expression for %s\n", p);
                             exit(3);
                         }
                     }
-                    else if(strcmp(p, "@std_number") == 0){
+                    else if (strcmp(p, "@std_number") == 0)
+                    {
                         int reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^(0[0-7]+|0x[0-9a-fA-F]+|[0-9]+)", REG_EXTENDED);
-                        if(reti){
+                        if (reti)
+                        {
+                            fprintf(stderr, "Could not compile regular expression for %s\n", p);
+                            exit(3);
+                        }
+                    }
+                    else if (strcmp(p, "@std_string") == 0)
+                    {
+                        int reti = regcomp(&s.tokens[s.number_of_tokens].regex, "\"([^\"\\\\]|\\\\.)*\"", REG_EXTENDED);
+                        if (reti)
+                        {
                             fprintf(stderr, "Could not compile regular expression for %s\n", p);
                             exit(3);
                         }
@@ -122,6 +139,13 @@ SYNTAX getSyntax(char *file)
             }
             else if (section == 2)
             {
+            }
+            else if (section == 3)
+            {
+                if (strcmp(p, "HAS_STD_COMMENTS") == 0)
+                    s.has_c_cpp_comments = 1;
+                if (strcmp(p, "HAS_STD_STRINGS") == 0)
+                    s.has_std_strings = 1;
             }
         }
         p = strtok(NULL, "\n");

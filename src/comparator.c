@@ -6,7 +6,7 @@
 #include "../include/syntax.h"
 #include "../include/comparing_algorithm.h"
 
-int min(int a, int b){return a < b ? a : b;}
+int min(int a, int b) { return a < b ? a : b; }
 
 void token_cpy(TOKEN *adr, const B_TOKEN t, char *p, int l)
 {
@@ -18,9 +18,7 @@ void token_cpy(TOKEN *adr, const B_TOKEN t, char *p, int l)
 int matches(B_TOKEN t, char *txt)
 {
     if (t.blueprint[0] == '@')
-    {
         return regexec(&t.regex, txt, 0, NULL, 0) == 0;
-    }
     else
         return strncmp(t.blueprint, txt, strlen(t.blueprint)) == 0;
 }
@@ -33,19 +31,83 @@ int token_len(B_TOKEN t)
         return strlen(t.blueprint);
 }
 
+int count_backslashes(char *s, int poz)
+{
+    int i;
+    for (i = poz; i >= 0 && s[i] == '\\'; i--)
+        ;
+    return poz - i;
+}
+
+int removeComments(char *prgm, unsigned has_std_strings)
+{
+    int n = strlen(prgm);
+    unsigned s_cmt = 0;
+    unsigned m_cmt = 0;
+    unsigned k = 0;
+    unsigned in_string = 0;
+    unsigned escaped = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        if (has_std_strings && prgm[i] == '"' && !m_cmt && !s_cmt && !in_string)
+        {
+            in_string = 1;
+            prgm[k++] = prgm[i];
+        }
+        else if (has_std_strings && in_string && prgm[i] == '"' && !escaped)
+        {
+            in_string = 0;
+            prgm[k++] = prgm[i];
+        }
+        else if (has_std_strings && in_string)
+        {
+            if (prgm[i] == '\\')
+                escaped = !escaped;
+            else
+                escaped = 0;
+            prgm[k++] = prgm[i];
+        }
+        else if (s_cmt == 1 && prgm[i] == '\n')
+        {
+            s_cmt = 0;
+        }
+        else if (m_cmt == 1 && prgm[i] == '*' && prgm[i + 1] == '/' && !in_string)
+            m_cmt = 0, i++;
+        else if (s_cmt || m_cmt)
+            continue;
+        else if (prgm[i] == '/' && prgm[i + 1] == '/' && !in_string)
+            s_cmt = 1, i++;
+        else if (prgm[i] == '/' && prgm[i + 1] == '*' && !in_string)
+            m_cmt = 1, i++;
+        else
+            prgm[k++] = prgm[i];
+    }
+    prgm[k] = 0;
+    return k;
+}
+
 void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
 {
     char *input = (char *)malloc(131072);
     size_t in_size = fread(input, 1, 131072, file);
     input[in_size] = '\0';
+    if (s->has_c_cpp_comments)
+        in_size = removeComments(input, s->has_std_strings);
+    // printf("%s\n", input);
     int ptr = 0;
     int token_ptr = 0;
     while (ptr < in_size)
     {
-        while (input[ptr] == ' ' || input[ptr] == '\n')
-            ptr++;
-        if(input[ptr] == '#')
-            ptr = strchr(input+ptr, '\n') - input + 1;
+        while (input[ptr] == ' ' || input[ptr] == '\n' || input[ptr] == '#')
+        {
+            if (input[ptr] == ' ' || input[ptr] == '\n')
+                ptr++;
+            else if (input[ptr] == '#')
+                ptr = strchr(input + ptr, '\n') - input + 1;
+        }
+        if (input[ptr] == '\0')
+            break;
         unsigned token_found = 0;
         for (int i = 0; i < s->number_of_tokens; i++)
         {
@@ -83,6 +145,25 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
                             while (input[ptr] >= '0' && input[ptr] <= '9')
                                 ptr++;
                     }
+                    else if (strcmp(s->tokens[i].blueprint, "@std_string") == 0)
+                    {
+                        unsigned escaped = 0;
+                        for (ptr++; ptr < in_size; ptr++)
+                        {
+                            if (input[ptr] == '"' && !escaped)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                if (input[ptr] == '\\')
+                                    escaped = !escaped;
+                                else
+                                    escaped = 0;
+                            }
+                        }
+                        ptr++;
+                    }
                     l = ptr - p1;
                 }
                 else
@@ -91,8 +172,9 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
                 break;
             }
         }
-        if(token_found == 0){
-            fprintf(stderr, "Cannot parse token at:\n%s\n", input+ptr);
+        if (token_found == 0)
+        {
+            fprintf(stderr, "Cannot parse token at:\n%s\n", input + ptr);
             exit(4);
         }
     }

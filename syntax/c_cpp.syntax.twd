@@ -1,3 +1,7 @@
+CONFIG:
+HAS_STD_COMMENTS
+HAS_STD_STRINGS
+
 LANG_TOKENS:
 unsigned
 signed
@@ -9,6 +13,19 @@ float
 bool
 struct
 typedef
+class
+public
+private
+template
+typename
+operator
+~
+new
+delete
+
+ULL
+UL
+U
 
 (
 )
@@ -77,6 +94,7 @@ std
 
 @std_identifier
 @std_number
+@std_string
 
 SAME:
 # The program cannot deal with these yet.

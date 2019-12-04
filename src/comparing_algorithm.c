@@ -67,8 +67,8 @@ void CalcCompare(
       if (items1[x + begIndex1].type == items2[y + begIndex2].type)
       {
         weightFromDiagonal = x == 0
-                                  ? (y + 1) * insertWeight
-                                  : lastRowWeights[x - 1];
+                                 ? (y + 1) * insertWeight
+                                 : lastRowWeights[x - 1];
       }
       else
         weightFromDiagonal = 0x7FFFFFFF;
