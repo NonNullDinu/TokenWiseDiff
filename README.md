@@ -1,2 +1,2 @@
 # TokenWiseDiff
-This process compares 2 files token by token and outputs a percentage of how similar the files given are.
+A program that compares 2 files token by token(based on a syntax file) and outputs the number of tokens that appear to be the same and the total number of tokens.
