@@ -3,7 +3,7 @@
 #include <regex.h>
 typedef struct {
     int type;
-    void* data;
+    char data[256];
 } TOKEN;
 
 typedef struct {

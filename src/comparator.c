@@ -6,10 +6,13 @@
 #include "../include/syntax.h"
 #include "../include/comparing_algorithm.h"
 
-void token_cpy(TOKEN *adr, const B_TOKEN t, char *p)
+int min(int a, int b){return a < b ? a : b;}
+
+void token_cpy(TOKEN *adr, const B_TOKEN t, char *p, int l)
 {
     adr->type = t.type;
-    adr->data = p;
+    strncpy(adr->data, p, min(l, 255));
+    adr->data[min(l, 255)] = '\0';
 }
 
 int matches(B_TOKEN t, char *txt)
@@ -34,6 +37,7 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
 {
     char *input = (char *)malloc(131072);
     size_t in_size = fread(input, 1, 131072, file);
+    input[in_size] = '\0';
     int ptr = 0;
     int token_ptr = 0;
     while (ptr < in_size)
@@ -48,8 +52,8 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
             if (matches(s->tokens[i], input + ptr) == 1)
             {
                 token_found = 1;
-                token_cpy(&(container->tokens[token_ptr++]), s->tokens[i], input + ptr);
                 int l = token_len(s->tokens[i]);
+                int p1 = ptr;
                 if (l == -1)
                 {
                     if (strcmp(s->tokens[i].blueprint, "@std_identifier") == 0)
@@ -79,18 +83,21 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
                             while (input[ptr] >= '0' && input[ptr] <= '9')
                                 ptr++;
                     }
+                    l = ptr - p1;
                 }
                 else
                     ptr += l;
+                token_cpy(&(container->tokens[token_ptr++]), s->tokens[i], input + p1, l);
                 break;
             }
         }
         if(token_found == 0){
-            fprintf(stderr, "cannot parse token at:\n%s\n", input+ptr);
+            fprintf(stderr, "Cannot parse token at:\n%s\n", input+ptr);
             exit(4);
         }
     }
     container->token_count = token_ptr;
+    free(input);
 }
 
 RESULT compare(TOKENS_CONTAINER *c1, TOKENS_CONTAINER *c2, SYNTAX *s)
