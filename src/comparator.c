@@ -108,5 +108,7 @@ RESULT compare(TOKENS_CONTAINER *c1, TOKENS_CONTAINER *c2, SYNTAX *s)
     RESULT result;
     result.matches = n;
     result.total = c1->token_count + c2->token_count;
+    free(m1);
+    free(m2);
     return result;
 }
