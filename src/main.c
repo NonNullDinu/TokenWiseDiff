@@ -26,11 +26,11 @@ int main(int argc, char **argv)
     read_parse(&INTERNAL_2, f2, &syntax);
     fclose(f1);
     fclose(f2);
-    int sim_index = compare(&INTERNAL_1, &INTERNAL_2, &syntax);
+    RESULT res = compare(&INTERNAL_1, &INTERNAL_2, &syntax);
     if (opts.fancy_output)
-        printf("Similarity index: %d\n", sim_index);
+        printf("Similarities in tokens: %ld\nTotal: %ld\n", res.matches, res.total);
     else
-        printf("%d", sim_index);
+        printf("%ld\n%ld\n", res.matches, res.total);
     deallocate_syntax(&syntax);
     return 0;
 }
@@ -63,6 +63,8 @@ OPTS process_args(int argc, char **argv)
             strcpy(opts.syntax_file, argv[i + 1]);
             i++;
         }
+        else if(strcmp(argv[i], "-f") == 0)
+            opts.fancy_output = 1;
     }
     if (file_2_loc[0] == '\0')
     {
@@ -104,7 +106,14 @@ SYNTAX getSyntax(char *file)
                     if(strcmp(p, "@std_identifier") == 0){
                         int reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^[a-zA-Z_][a-zA-Z0-9_]*", 0);
                         if(reti){
-                            fprintf(stderr, "Could not compile regular expression %s\n", p);
+                            fprintf(stderr, "Could not compile regular expression for %s\n", p);
+                            exit(3);
+                        }
+                    }
+                    else if(strcmp(p, "@std_number") == 0){
+                        int reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^(0[0-7]+|0x[0-9a-fA-F]+|[0-9]+)", REG_EXTENDED);
+                        if(reti){
+                            fprintf(stderr, "Could not compile regular expression for %s\n", p);
                             exit(3);
                         }
                     }

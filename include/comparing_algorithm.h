@@ -3,7 +3,7 @@
 #include "tokens.h"
 
 void CalcCompare(
-  int *match1, int *match2,
+  unsigned *match1, unsigned *match2,
   const TOKEN *items1, const TOKEN *items2,
   unsigned count1, unsigned count2);
 

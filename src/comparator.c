@@ -40,18 +40,44 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
     {
         while (input[ptr] == ' ' || input[ptr] == '\n')
             ptr++;
+        if(input[ptr] == '#')
+            ptr = strchr(input+ptr, '\n') - input + 1;
+        unsigned token_found = 0;
         for (int i = 0; i < s->number_of_tokens; i++)
         {
             if (matches(s->tokens[i], input + ptr) == 1)
             {
+                token_found = 1;
                 token_cpy(&(container->tokens[token_ptr++]), s->tokens[i], input + ptr);
                 int l = token_len(s->tokens[i]);
                 if (l == -1)
                 {
-                    if(strcmp(s->tokens[i].blueprint, "@std_identifier") == 0){
+                    if (strcmp(s->tokens[i].blueprint, "@std_identifier") == 0)
+                    {
                         ptr++;
-                        while((input[ptr] >= 'a' && input[ptr] <= 'z') || (input[ptr] >= 'A' && input[ptr] <= 'Z') || (input[ptr] >= '0' && input[ptr] <= '9') || input[ptr] == '_')
+                        while ((input[ptr] >= 'a' && input[ptr] <= 'z') || (input[ptr] >= 'A' && input[ptr] <= 'Z') || (input[ptr] >= '0' && input[ptr] <= '9') || input[ptr] == '_')
                             ptr++;
+                    }
+                    else if (strcmp(s->tokens[i].blueprint, "@std_number") == 0)
+                    {
+                        if (input[ptr] == '0')
+                        {
+                            ptr++;
+                            if (input[ptr] == 'x')
+                            {
+                                ptr++;
+                                while ((input[ptr] >= '0' && input[ptr] <= '9') || (input[ptr] >= 'A' && input[ptr] <= 'F') || (input[ptr] >= 'a' && input[ptr] <= 'f'))
+                                    ptr++;
+                            }
+                            else
+                            {
+                                while (input[ptr] >= '0' && input[ptr] <= '7')
+                                    ptr++;
+                            }
+                        }
+                        else
+                            while (input[ptr] >= '0' && input[ptr] <= '9')
+                                ptr++;
                     }
                 }
                 else
@@ -59,12 +85,28 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
                 break;
             }
         }
+        if(token_found == 0){
+            fprintf(stderr, "cannot parse token at:\n%s\n", input+ptr);
+            exit(4);
+        }
     }
     container->token_count = token_ptr;
 }
 
-int compare(TOKENS_CONTAINER *c1, TOKENS_CONTAINER *c2, SYNTAX *s)
+RESULT compare(TOKENS_CONTAINER *c1, TOKENS_CONTAINER *c2, SYNTAX *s)
 {
-    int *m1 = 
-    return 0;
+    unsigned *m1 = (unsigned *)malloc(c1->token_count * sizeof(unsigned));
+    unsigned *m2 = (unsigned *)malloc(c2->token_count * sizeof(unsigned));
+    CalcCompare(m1, m2, c1->tokens, c2->tokens, c1->token_count, c2->token_count);
+    int n = 0;
+    for (int i = 0; i < c1->token_count; i++)
+        if (m1[i] == 1)
+            n++;
+    for (int i = 0; i < c2->token_count; i++)
+        if (m2[i] == 1)
+            n++;
+    RESULT result;
+    result.matches = n;
+    result.total = c1->token_count + c2->token_count;
+    return result;
 }
