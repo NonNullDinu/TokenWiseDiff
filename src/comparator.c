@@ -99,9 +99,9 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
     int token_ptr = 0;
     while (ptr < in_size)
     {
-        while (input[ptr] == ' ' || input[ptr] == '\n' || input[ptr] == '#')
+        while (input[ptr] == ' ' || input[ptr] == '\n' || input[ptr] == '\r' || input[ptr] == '\t' || input[ptr] == '#')
         {
-            if (input[ptr] == ' ' || input[ptr] == '\n')
+            if (input[ptr] == ' ' || input[ptr] == '\n' || input[ptr] == '\r' || input[ptr] == '\t')
                 ptr++;
             else if (input[ptr] == '#')
                 ptr = strchr(input + ptr, '\n') - input + 1;
@@ -164,6 +164,27 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
                         }
                         ptr++;
                     }
+                    else if (strcmp(s->tokens[i].blueprint, "@std_char") == 0)
+                    {
+                        unsigned escaped = 0;
+                        for (ptr++; ptr < in_size; ptr++)
+                        {
+                            if (input[ptr] == '\'' && !escaped)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                if (input[ptr] == '\\')
+                                    escaped = !escaped;
+                                else
+                                {
+                                    escaped = 0;
+                                }
+                            }
+                        }
+                        ptr++;
+                    }
                     l = ptr - p1;
                 }
                 else
@@ -174,7 +195,7 @@ void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
         }
         if (token_found == 0)
         {
-            fprintf(stderr, "Cannot parse token at:\n%s\n", input + ptr);
+            fprintf(stderr, "Cannot parse token at:\n%s\nFirst char: %d", input + ptr, input[ptr]);
             exit(4);
         }
     }

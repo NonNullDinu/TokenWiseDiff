@@ -11,6 +11,7 @@ char
 double
 float
 bool
+void
 struct
 typedef
 class
@@ -66,10 +67,10 @@ U
 ,
 
 ==
->
 >=
-<
+>
 <=
+<
 !=
 
 if
@@ -95,6 +96,7 @@ std
 @std_identifier
 @std_number
 @std_string
+@std_char
 
 SAME:
 # The program cannot deal with these yet.

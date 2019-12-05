@@ -28,9 +28,9 @@ int main(int argc, char **argv)
     fclose(f2);
     RESULT res = compare(&INTERNAL_1, &INTERNAL_2, &syntax);
     if (opts.fancy_output)
-        printf("Similarities in tokens: %ld\nTotal: %ld\nPercentage: %Lf\n", res.matches, res.total, ((long double) res.matches) / ((long double) res.total));
+        printf("Similarities in tokens: %ld\nTotal: %ld\nPercentage: %Lf\n", res.matches, res.total, ((long double)res.matches) / ((long double)res.total));
     else
-        printf("%ld\n%ld\n%Lf", res.matches, res.total, ((long double) res.matches) / ((long double) res.total));
+        printf("%ld\n%ld\n%Lf", res.matches, res.total, ((long double)res.matches) / ((long double)res.total));
     deallocate_syntax(&syntax);
     return 0;
 }
@@ -107,32 +107,26 @@ SYNTAX getSyntax(char *file)
                 strcpy(s.tokens[s.number_of_tokens].blueprint, p);
                 if (p[0] == '@')
                 {
+                    int reti = -1;
                     if (strcmp(p, "@std_identifier") == 0)
                     {
-                        int reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^[a-zA-Z_][a-zA-Z0-9_]*", 0);
-                        if (reti)
-                        {
-                            fprintf(stderr, "Could not compile regular expression for %s\n", p);
-                            exit(3);
-                        }
+                        reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^[a-zA-Z_][a-zA-Z0-9_]*", 0);
                     }
                     else if (strcmp(p, "@std_number") == 0)
                     {
-                        int reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^(0[0-7]+|0x[0-9a-fA-F]+|[0-9]+)", REG_EXTENDED);
-                        if (reti)
-                        {
-                            fprintf(stderr, "Could not compile regular expression for %s\n", p);
-                            exit(3);
-                        }
+                        reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^(0[0-7]+|0x[0-9a-fA-F]+|[0-9]+)", REG_EXTENDED);
                     }
                     else if (strcmp(p, "@std_string") == 0)
                     {
-                        int reti = regcomp(&s.tokens[s.number_of_tokens].regex, "\"([^\"\\\\]|\\\\.)*\"", REG_EXTENDED);
-                        if (reti)
-                        {
-                            fprintf(stderr, "Could not compile regular expression for %s\n", p);
-                            exit(3);
-                        }
+                        reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^\"([^\"\\\\]|\\\\.)*\"", REG_EXTENDED);
+                    }
+                    else if(strcmp(p, "@std_char") == 0){
+                        reti = regcomp(&s.tokens[s.number_of_tokens].regex, "^'(\\\\.|.)+'", REG_EXTENDED);
+                    }
+                    if (reti)
+                    {
+                        fprintf(stderr, "Could not compile regular expression for %s\nREGEX ERROR: %d\n", p, reti);
+                        exit(3);
                     }
                 }
                 s.number_of_tokens++;

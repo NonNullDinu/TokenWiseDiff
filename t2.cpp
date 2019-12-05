@@ -1,121 +1,202 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <regex.h>
-#include "include/comparator.h"
-#include "include/syntax.h"
-#include "include/comparing_algorithm.h"
+#include<bits/stdc++.h>
+using namespace std;
 
-int min(int a, int b){return a < b ? a : b;}
+ifstream in("base_converter.in");
+ofstream out("base_converter.out");
 
-void token_cpy(TOKEN *adr, const B_TOKEN t, char *p, int l)
+int mod(string num, int a)
 {
-    adr->type = t.type;
-    strncpy(adr->data, p, min(l, 255));
-    // adr->data[min(l, 255)] = '\0';
+    int res = 0;
+    for (int i = 0; i < num.length(); i++)
+         res = (res*10 + (int)num[i] - '0') %a;
+    return res;
 }
 
-int matches(B_TOKEN t, char *txt)
+int mic(string str1,string str2)
 {
-    // if (t.blueprint[0] == '@')
+    int n1=str1.length(),n2=str2.length();
+    if(n1<n2)
+        return true;
+    if(n2>n1)
+        return false;
+
+    for(int i=0;i<n1;i++)
     {
-        return regexec(&t.regex, txt, 0, NULL, 0) == 0;
+        if(str1[i]<str2[i])
+            return true;
+        else
+        if(str1[i]>str2[i])
+            return false;
     }
-    else
-        return strncmp(t.blueprint, txt, strlen(t.blueprint)) == 0;
+    return false;
 }
 
-int token_len(B_TOKEN t)
-{
-    // if (t.blueprint[0] == '@')
-        return -1;
-    else
-        return strlen(t.blueprint);
-}
 
-void read_parse(TOKENS_CONTAINER *container, FILE *file, SYNTAX *s)
+string dx(string str1,string str2)
 {
-    char *input = (char *)malloc(131072);
-    size_t in_size = fread(input, 1, 131072, file);
-    // input[in_size] = '\0';
-    int ptr = 0;
-    int token_ptr = 0;
-    while (ptr < in_size)
+    if(mic(str1,str2))
+        swap(str1, str2);
+    string str = "";
+    int n1=str1.length(),n2=str2.length();
+    int dif=n1-n2;
+    int t=0;
+    for(int i=n2-1;i>=0;i--)
     {
-        // while (input[ptr] == ' ' || input[ptr] == '\n')
-            ptr++;
-        // if(input[ptr] == '#')
-            // ptr = strchr(input+ptr, '\n') - input + 1;
-        unsigned token_found = 0;
-        for (int i = 0; i < s->number_of_tokens; i++)
+        int sub=((str1[i+dif]-'0')-(str2[i]-'0')-t);
+        if(sub<0)
+            sub+=10,t=1;
+        else
+            t=0;
+        str.push_back(sub+'0');
+    }
+    for(int i=n1-n2-1;i>=0;i--)
+    {
+        if(str1[i]=='0'&&t)
         {
-            if (matches(s->tokens[i], input + ptr) == 1)
-            {
-                token_found = 1;
-                int l = token_len(s->tokens[i]);
-                int p1 = ptr;
-                if (l == -1)
-                {
-                    // if (strcmp(s->tokens[i].blueprint, "@std_identifier") == 0)
-                    {
-                        ptr++;
-                        // while ((input[ptr] >= 'a' && input[ptr] <= 'z') || (input[ptr] >= 'A' && input[ptr] <= 'Z') || (input[ptr] >= '0' && input[ptr] <= '9') || input[ptr] == '_')
-                            ptr++;
-                    }
-                    // else if (strcmp(s->tokens[i].blueprint, "@std_number") == 0)
-                    {
-                        // if (input[ptr] == '0')
-                        {
-                            ptr++;
-                            // if (input[ptr] == 'x')
-                            {
-                                ptr++;
-                                // while ((input[ptr] >= '0' && input[ptr] <= '9') || (input[ptr] >= 'A' && input[ptr] <= 'F') || (input[ptr] >= 'a' && input[ptr] <= 'f'))
-                                    ptr++;
-                            }
-                            else
-                            {
-                                // while (input[ptr] >= '0' && input[ptr] <= '7')
-                                    ptr++;
-                            }
-                        }
-                        // else
-                            // while (input[ptr] >= '0' && input[ptr] <= '9')
-                                ptr++;
-                    }
-                    l = ptr - p1;
-                }
-                else
-                    ptr += l;
-                token_cpy(&(container->tokens[token_ptr++]), s->tokens[i], input + p1, l);
-                break;
-            }
+            str.push_back('9');
+            continue;
         }
-        if(token_found == 0){
-            fprintf(stderr, "Cannot parse token at:\n%s\n", input+ptr);
-            exit(4);
-        }
+        int sub=((str1[i]-'0')-t);
+        if (i>0||sub>0)
+            str.push_back(sub+'0');
+        t=0;
     }
-    container->token_count = token_ptr;
-    free(input);
+    reverse(str.begin(),str.end());
+    return str;
 }
 
-RESULT compare(TOKENS_CONTAINER *c1, TOKENS_CONTAINER *c2, SYNTAX *s)
+string sx(string str1,string str2)
 {
-    unsigned *m1 = (unsigned *)malloc(c1->token_count * sizeof(unsigned));
-    unsigned *m2 = (unsigned *)malloc(c2->token_count * sizeof(unsigned));
-    CalcCompare(m1, m2, c1->tokens, c2->tokens, c1->token_count, c2->token_count);
-    int n = 0;
-    for (int i = 0; i < c1->token_count; i++)
-        if (m1[i] == 1)
-            n++;
-    for (int i = 0; i < c2->token_count; i++)
-        if (m2[i] == 1)
-            n++;
-    RESULT result;
-    result.matches = n;
-    result.total = c1->token_count + c2->token_count;
-    free(m1);
-    free(m2);
-    return result;
+    int t=0;
+    if (str1.length()>str2.length())
+        swap(str1,str2);
+    string str="";
+    int n1=str1.length(),n2=str2.length();
+    int dif=n2-n1;
+    for(int i=n1-1;i>=0;i--)
+    {
+        int sum=((str1[i]-'0')+(str2[i+dif]-'0')+t);
+        str.push_back(sum%10+'0');
+        t=sum/10;
+    }
+    for(int i=n2-n1-1;i>=0;i--)
+    {
+        int sum=((str2[i]-'0')+t);
+        str.push_back(sum%10+'0');
+        t=sum/10;
+    }
+    if(t)
+        str.push_back(t+'0');
+    reverse(str.begin(),str.end());
+    return str;
+}
+
+string px(string num1, string num2)
+{
+    int n1=num1.size();
+    int n2=num2.size();
+    if(n1==0||n2==0)
+       return "0";
+    vector<int> rez(n1+n2,0);
+    int i_n1=0;
+    int i_n2=0;
+    for(int i=n1-1;i>=0;i--)
+    {
+        int t=0;
+        int n1=num1[i]-'0';
+        i_n2=0;
+        for(int j=n2-1;j>=0;j--)
+        {
+            int n2=num2[j]-'0';
+            int sum=n1*n2+rez[i_n1+i_n2]+t;
+            t=sum/10;
+            rez[i_n1+i_n2]=sum%10;
+            i_n2++;
+        }
+        if(t>0)
+            rez[i_n1+i_n2]+=t;
+        i_n1++;
+    }
+    int i=rez.size()-1;
+    while(i>=0 && rez[i]==0)
+       i--;
+    if(i==-1)
+       return "0";
+    string s="";
+    while(i>=0)
+        s+=to_string(rez[i--]);
+    return s;
+}
+
+string ddx(string number, int divisor)
+{
+    string ans;
+    int idx = 0;
+    int temp = number[idx] - '0';
+    while (temp < divisor)
+       temp = temp * 10 + (number[++idx] - '0');
+    while (number.size() > idx)
+    {
+        ans += (temp / divisor) + '0';
+        temp = (temp % divisor) * 10 + number[++idx] - '0';
+    }
+    if (ans.length() == 0)
+        return "0";
+    return ans;
+}
+
+char reVal(int n)
+{
+    if (n >= 0 && n <= 9)
+        return (char)(n + '0');
+    else
+        return (char)(n - 10 + 'A');
+}
+
+int val(char c)
+{
+	if(c>='0' && c<='9')
+		return (int)c-'0';
+	else
+		return (int)c-'A'+10;
+}
+
+string fromdec(string n, int b)
+{
+    string s;
+    while (n != "0")
+    {
+        s+= reVal(mod(n,b));
+        n=ddx(n,b);
+    }
+    reverse(s.begin(),s.end());
+    return s;
+}
+
+string dec(string s, int b)
+{
+    string n="0",p="1",bb=to_string(b);
+	for(int i=s.size()-1;i>=0;i--)
+	{
+		if(val(s[i])>=b)
+		{
+            printf("Invalid number");
+            return "-1";
+		}
+		string sss=to_string(val(s[i])),ss;
+		ss=px(p,sss);
+		n=sx(ss,n);
+		p=px(p,bb);
+	}
+	return n;
+}
+
+int main()
+{
+    string s;
+    int b,c;
+    in>>s>>b>>c;
+    s=dec(s,b);
+    out<<fromdec(s,c);
+	return 0;
 }
