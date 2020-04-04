@@ -1,6 +1,5 @@
 #include "comparing_algorithm.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 void LCS(const struct token_t *items1, const struct token_t *items2,
          unsigned count1, unsigned count2, size_t *matches_count) {

@@ -98,15 +98,4 @@ std
 @std_string
 @std_char
 
-SAME:
-# The program cannot deal with these yet.
-a+=b a=a+b
-a-=b a=a-b
-a*=b a=a*b
-a/=b a=a/b
-a%=b a=a%b
-a|=b a=a|b
-a&=b a=a&b
-((a)) (a)
-
 END
