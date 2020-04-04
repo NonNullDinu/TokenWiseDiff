@@ -1,0 +1,15 @@
+cmake_minimum_required(VERSION 3.14)
+project(TokenWise_diff C)
+
+set(CMAKE_C_STANDARD 11)
+
+include_directories(.)
+
+add_compile_options(-O3)
+
+add_executable(executable
+        main.c
+        syntax.h
+        comparator.h comparator.c
+        comparing_algorithm.h comparing_algorithm.c
+        tokens.h syntax.c)
