@@ -33,3 +33,8 @@ The `@std_number` tells the parser that it can expect numbers written in octal(h
 The `@std_string` tells the parser that it can expect C strings, as described above. This should be used together with `HAS_STD_STRINGS` in the config.
 
 The `@std_char` tells the parser that it can expect C characters, like `'a'`, `'b'`, `'\''`, `'"'`
+
+**In the end, it should end with a line that only contains:**
+```
+END
+```
