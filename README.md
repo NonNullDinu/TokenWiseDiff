@@ -4,7 +4,7 @@ A lightweight program that compares files(was explicitly build for source files)
 The syntax of the files should be the same.
 
 For now, there is only one syntax, for C/C++ sources, but other ones can be written easily.
-If you would like to submit a syntax for a programming language that currently doesn't currently have a syntax file in the [syntax folder](syntax),
+If you would like to submit the syntax for a programming language that currently doesn't have a syntax file in the [syntax folder](syntax),
 feel free to open a pull request.
 ## Synopsis
 ```
