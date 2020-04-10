@@ -19,7 +19,7 @@ struct in_file_t files[2000];
 struct pair_of_in_files_t pairs[100000];
 
 struct opts_t {
-	int fancy_output;
+	int fancy_output, skip_counts, really_simple_output;
 	char syntax_file[256];
 	size_t in_file_count, pairs_count;
 };
@@ -43,21 +43,35 @@ int main(int argc, char **argv) {
 		size_t i1 = pairs[i].real_index1, i2 = pairs[i].real_index2;
 		if (!files[i1].createdSuccessfully || !files[i2].createdSuccessfully) { continue; }
 		struct result_t res = compare(&files[i1].container, &files[i2].container, &syntax);
-		if (opts.fancy_output)
-			printf("BEGIN\nBetween:%ld and %ld\nsimilarities:%ld\ntotal:%ld\npercentage:%Lf\nEND\n", files[i1].index,
-			       files[i2].index, res.matches, res.total,
-			       ((long double) res.matches) / ((long double) res.total));
-		else
-			printf("BEGIN\n%ld,%ld\n%ld\n%ld\n%Lf\nEND\n", files[i1].index, files[i2].index, res.matches, res.total,
-			       ((long double) res.matches) / ((long double) res.total));
-
+		if (opts.fancy_output) {
+			printf("BEGIN\nBetween:%ld and %ld\n", files[i1].index,
+			       files[i2].index);
+			if (!opts.skip_counts) {
+				printf("similarities:%ld\ntotal:%ld\n", res.matches, res.total);
+			}
+			printf("percentage:%Lf\nEND\n", ((long double) res.matches) / ((long double) res.total));
+		} else if (opts.really_simple_output) {
+			printf("(%ld,%ld)", files[i1].index,
+			       files[i2].index);
+			if (!opts.skip_counts) {
+				printf(":%ld:%ld", res.matches, res.total);
+			}
+			printf(":%Lf\n", ((long double) res.matches) / ((long double) res.total));
+		} else {
+			printf("BEGIN\n%ld,%ld\n", files[i1].index,
+			       files[i2].index);
+			if (!opts.skip_counts) {
+				printf("%ld\n%ld\n", res.matches, res.total);
+			}
+			printf("%Lf\nEND\n", ((long double) res.matches) / ((long double) res.total));
+		}
 	}
 	return 0;
 }
 
 static struct opts_t process_args(int argc, char **argv) {
 	struct opts_t opts;
-	opts.fancy_output = opts.in_file_count = 0;
+	opts.fancy_output = opts.in_file_count = opts.skip_counts = opts.really_simple_output = 0;
 	strcpy(opts.syntax_file, "");
 	for (int i = 0; i < argc; i++) {
 		if (strcmp(argv[i], "-i") == 0) {
@@ -99,6 +113,10 @@ static struct opts_t process_args(int argc, char **argv) {
 			i++;
 		} else if (strcmp(argv[i], "-f") == 0) {
 			opts.fancy_output = 1;
+		} else if (strcmp(argv[i], "--skip-counts") == 0) {
+			opts.skip_counts = 1;
+		} else if (strcmp(argv[i], "--really-simple-output") == 0) {
+			opts.really_simple_output = 1;
 		}
 	}
 	return opts;
