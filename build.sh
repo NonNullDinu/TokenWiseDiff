@@ -1,2 +1,6 @@
 #!/usr/bin/env bash
-mkdir build && cd build && cmake .. && cmake --build . --target twdiff && cp twdiff ../ && cd .. && rm -rf build || (x=$? && cd .. && rm -rf build && exit $x) || exit $?
+mkdir -p build || exit $?
+pushd build || exit $?
+cmake .. && cmake --build . --target twdiff || exit $?
+cp twdiff ../ || exit $?
+popd || exit $?
