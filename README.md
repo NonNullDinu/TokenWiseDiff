@@ -1,6 +1,7 @@
 # TokenWiseDiff
 [![build](https://github.com/NonNullDinu/twdiff/workflows/build/badge.svg)](#)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 A lightweight program that compares files(was explicitly build for source files) that outputs information on how similar they look "at a first glance".
 
 The syntax of the files should be the same.
