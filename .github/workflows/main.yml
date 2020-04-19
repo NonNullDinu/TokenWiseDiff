@@ -14,4 +14,4 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: build
-        run: sh build.sh
+        run: bash build.sh
