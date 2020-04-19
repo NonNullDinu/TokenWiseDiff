@@ -5,8 +5,6 @@ set(CMAKE_C_STANDARD 11)
 
 include_directories(.)
 
-add_compile_options(-O3)
-
 add_executable(twdiff
         main.c
         syntax.h
