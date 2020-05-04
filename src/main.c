@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 			if (!opts.skip_counts) {
 				printf("similarities:%ld\ntotal:%ld\n", res.matches, res.total);
 			}
-			printf("percentage:%Lf\nEND\n", ((long double) res.matches) / ((long double) res.total));
+			printf("score:%Lf\nEND\n", ((long double) res.matches) / ((long double) res.total));
 		} else if (opts.really_simple_output) {
 			printf("(%ld,%ld)", files[i1].index,
 			       files[i2].index);

@@ -2,6 +2,8 @@
 [![build](https://github.com/NonNullDinu/twdiff/workflows/build/badge.svg)](#)
 [![license](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
+Pentru infoeducatie, documentatia se gaseste [aici](wiki/DocumentatieInfoeducatie.md).
+
 A lightweight program that compares files(was explicitly build for source files) that outputs information on how similar they look "at a first glance".
 
 The syntax of the files should be the same.
@@ -23,6 +25,11 @@ twdiff -s syntax_file [-i index:path/to/input/file] [-p index1:index2] [-f]
     that we should diff. Note that files that are not part of
     any pair are going to be discarded.
 - The `-f` stands for fancy output
+
+## Building
+```shell script
+./build.sh
+```
 
 ## Examples
 The [examples folder](examples) contains some examples that you can test with.

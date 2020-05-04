@@ -5,9 +5,11 @@ set(CMAKE_C_STANDARD 11)
 
 include_directories(.)
 
+file(GLOB twdiff_sources src/*.c)
+file(GLOB twdiff_headers include/*.h)
+
 add_executable(twdiff
-        main.c
-        syntax.h
-        comparator.h comparator.c
-        comparing_algorithm.h comparing_algorithm.c
-        tokens.h syntax.c)
+        ${twdiff_sources}
+        ${twdiff_headers})
+
+target_include_directories(twdiff PRIVATE include)
